@@ -1,0 +1,46 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    color: #fff;
+    padding: 1rem;
+}
+
+.left-side .login{
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #fff;
+    text-decoration: none;
+}
+
+.center-side .links {
+    list-style-type: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+}
+.center-side .links li {
+    margin-right: 1rem;
+}
+.center-side .links a{
+    color: #fff;
+    text-decoration: none;
+}
+.right-side{
+    display: flex;
+    align-items: center;
+    color: #fff;
+    text-decoration: none;
+    margin-left: 1rem;
+    position: relative;
+    background-color: #f44336;
+    color: #fff;
+    border-radius: 50%;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.8rem;
+    position: absolute;
+    top: -0.5rem;
+    right: -0.5rem;
+}
+

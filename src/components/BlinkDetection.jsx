@@ -141,26 +141,6 @@ const BlinkDetection = () => {
             };
         }, []);
 
-
-
-
-
-
-
-            // try {
-            //     const response = await fetch('http://127.0.0.1:8000/eye', {
-            //         method: 'POST',
-            //         headers: { 'Content-Type': 'application/json' },
-            //         body: JSON.stringify(eyedata),
-            //     });
-            //     const data = await response.json();
-            //     console.log("Is eye closed?", data.eyeclosed);
-            // } catch (error) {
-            //     console.error("Error sending coordinates:", error);
-            // }
-
-
-        // };
         //set an iterval on how many times are the coordinates send and captured
     useEffect(() => {
         const interval = setInterval(() => {
@@ -171,6 +151,7 @@ const BlinkDetection = () => {
 
     return (
         <div>
+            <h1>This is Blink page</h1>
             <Webcam ref={webcamRef} muted={true} style={{ width: 640, height: 480 }} />
         </div>
     );
