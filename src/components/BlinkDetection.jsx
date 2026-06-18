@@ -12,6 +12,8 @@ const BlinkDetection = () => {
     // refs to persist values between renders
     const webcamRef = useRef(null);
     const landmarkerRef = useRef(null);
+    const wsRef = useRef(null);
+
 
     //this hook will be called once
     //want to load the Ai once 
@@ -85,7 +87,7 @@ const BlinkDetection = () => {
                 const rightEyeCoords = RIGHT_EYE_INDICES.map(index => landmarks[index]);
 
                 // Send the secure numerical data to your backend
-                await sendToBackend({ left: leftEyeCoords, right: rightEyeCoords });
+                await sendToBackend({ left: leftEyeCoords, right: rightEyeCoords ,time:timestamp});
             };
 
 
@@ -93,21 +95,72 @@ const BlinkDetection = () => {
 
         //define afterwards as the things before need to be done first
         //send post req to backend with these coordinates and display the respose
+        // const sendToBackend = async (eyedata) => {
         const sendToBackend = async (eyedata) => {
-            try {
-                const response = await fetch('http://127.0.0.1:8000/eye', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(eyedata),
-                });
-                const data = await response.json();
-                console.log("Is eye closed?", data.eyeclosed);
-            } catch (error) {
-                console.error("Error sending coordinates:", error);
+            const ws = wsRef.current;
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify(eyedata));
+            } else {
+                console.warn('WebSocket is not open, cannot send data', ws?.readyState);
             }
-
-
         };
+
+        useEffect(() => {
+            const ws = new WebSocket("ws://localhost:8000/ws");
+            wsRef.current = ws;
+
+            ws.addEventListener("open", () => {
+                console.log('WebSocket connected');
+            });
+
+            ws.addEventListener("message", (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    console.log("Is eye closed?", data.eyeclosed);
+                } catch (err) {
+                    console.error('Failed to parse WebSocket message', err, event.data);
+                }
+            });
+
+            ws.addEventListener("error", (event) => {
+                console.error('WebSocket error', event);
+            });
+
+            ws.addEventListener("close", (event) => {
+                console.log('WebSocket closed', event.code, event.reason);
+                if (wsRef.current === ws) {
+                    wsRef.current = null;
+                }
+            });
+
+            return () => {
+                ws.close();
+                if (wsRef.current === ws) {
+                    wsRef.current = null;
+                }
+            };
+        }, []);
+
+
+
+
+
+
+
+            // try {
+            //     const response = await fetch('http://127.0.0.1:8000/eye', {
+            //         method: 'POST',
+            //         headers: { 'Content-Type': 'application/json' },
+            //         body: JSON.stringify(eyedata),
+            //     });
+            //     const data = await response.json();
+            //     console.log("Is eye closed?", data.eyeclosed);
+            // } catch (error) {
+            //     console.error("Error sending coordinates:", error);
+            // }
+
+
+        // };
         //set an iterval on how many times are the coordinates send and captured
     useEffect(() => {
         const interval = setInterval(() => {
