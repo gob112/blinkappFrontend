@@ -7,6 +7,7 @@ import BlinkDetection from './components/BlinkDetection'
 import Stats from './components/Stats'
 import Settings from './components/Settings'
 import NavBar from './components/NavBar'
+import Timer from './components/Timer'
 import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
           <Route path="/" element={<h1>homepage</h1>} />
           <Route path="/stats" element={<Stats />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/timer" element={<Timer />} />
         </Routes>
       </Router>
     </div>

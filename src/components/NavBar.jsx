@@ -23,6 +23,9 @@ const NavBar = () => {
                     <li>
                         <a href='/stats'>statistics</a>
                     </li>
+                    <li>
+                        <a href='/timer'>T</a>
+                    </li>
                 </ul>
             </div>
 
