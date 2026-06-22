@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react"
+import { useNavigate } from "react-router-dom";
 
 
 
@@ -6,11 +7,23 @@ const Timer = () =>{
     const [time, setTime] = useState(0);
     const [start, setStart] = useState(false);
     const intervalRef = useRef(null);
-    const [duration, setDuration] = useState(0);
-
+    const navigate = useNavigate();
+    const [duration, setDuration] = useState(() => {
+  // 1. Fetch the value from the global browser cache
+  const savedDuration = localStorage.getItem("break_timer_duration");
+  
+  // 2. Convert it to a number if it exists, otherwise use a fallback default
+  return savedDuration ? Number(savedDuration) : 10000; 
+});
 
     useEffect(()=>{
-        if (start) {
+      
+        setTime(duration);
+        setStart(true);
+    },[duration])
+
+    useEffect(()=>{
+        if (start && time>0) {
 
             intervalRef.current= setInterval(()=>{
 
@@ -19,6 +32,7 @@ const Timer = () =>{
                         // Stop when less than or equal to 1 second left
                         clearInterval(intervalRef.current);
                         setStart(false);
+                        navigate('/test')
                         return 0; // Set exactly 0
                     }
                     return prevTime - 1000;
@@ -31,9 +45,12 @@ const Timer = () =>{
 
         return () => {
             clearInterval(intervalRef.current);
+           
+
         }
 
-    },[start,duration]);
+    },[start,navigate]);
+     
 
 
 return(
@@ -41,11 +58,7 @@ return(
         <h2>Time:{time/1000}</h2>
         <button onClick={() => setStart(true)} disabled={start}>Start</button>
       <button onClick={() => setStart(false)} disabled={!start}>Stop</button>
-      <h3>durations</h3>
-       <button onClick={()=>setDuration(5000)} >5 sec</button>
-      <button onClick={()=>setDuration(10000)} >10 sec</button>
-         <button onClick={()=>setDuration(30000)} >30 sec</button>
-         <button onClick={()=>setDuration(60000)} >1min</button>
+      
 
     </div>
 );

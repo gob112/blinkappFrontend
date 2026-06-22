@@ -24,7 +24,10 @@ const NavBar = () => {
                         <a href='/stats'>statistics</a>
                     </li>
                     <li>
-                        <a href='/timer'>T</a>
+                        <a href='/timer'>Timer</a>
+                    </li>
+                    <li>
+                        <a href='/test'>Test</a>
                     </li>
                 </ul>
             </div>
