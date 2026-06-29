@@ -57,14 +57,48 @@ const BlinkDetection = () => {
 
 
     
-    //feed in video feed into face detection AI and extract the relevent coordinates and store into a object
-    const captureCoordinates = async () => {
-            //get the current state of the things fron useRef
-            const video = webcamRef.current && webcamRef.current.video;
+    useEffect(() => {
+        const ws = new WebSocket("ws://localhost:8000/ws");
+        wsRef.current = ws;
+
+        ws.addEventListener("open", () => {
+            console.log('WebSocket connected');
+        });
+
+        ws.addEventListener("message", (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                console.log("Is eye closed?", data.eyeclosed);
+            } catch (err) {
+                console.error('Failed to parse WebSocket message', err, event.data);
+            }
+        });
+
+        ws.addEventListener("error", (event) => {
+            console.error('WebSocket error', event);
+        });
+
+        ws.addEventListener("close", (event) => {
+            console.log('WebSocket closed', event.code, event.reason);
+            if (wsRef.current === ws) {
+                wsRef.current = null;
+            }
+        });
+
+        return () => {
+            ws.close();
+            if (wsRef.current === ws) {
+                wsRef.current = null;
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        const interval = setInterval(async () => {
+            const video = webcamRef.current?.video;
             const timestamp = performance.now();
-            // pass video into AI to get resulting landmarks
+
             if (!landmarkerRef.current || !video) return;
-            // ensure video frame has non-zero dimensions to avoid MediaPipe ROI errors
             if (!video.videoWidth || !video.videoHeight) {
                 console.warn('Skipping frame: video has zero width/height', video.videoWidth, video.videoHeight);
                 return;
@@ -78,74 +112,20 @@ const BlinkDetection = () => {
                 return;
             }
 
-
-            //extract the eye landmarks only via coordinates defined above
-            if (result && result.faceLandmarks && result.faceLandmarks.length > 0) {
-                const landmarks = result.faceLandmarks[0]; // First detected face
-
+            if (result?.faceLandmarks?.length > 0) {
+                const landmarks = result.faceLandmarks[0];
                 const leftEyeCoords = LEFT_EYE_INDICES.map(index => landmarks[index]);
                 const rightEyeCoords = RIGHT_EYE_INDICES.map(index => landmarks[index]);
 
-                // Send the secure numerical data to your backend
-                await sendToBackend({ left: leftEyeCoords, right: rightEyeCoords ,time:timestamp});
-            };
-
-
-        };
-
-        //define afterwards as the things before need to be done first
-        //send post req to backend with these coordinates and display the respose
-        // const sendToBackend = async (eyedata) => {
-        const sendToBackend = async (eyedata) => {
-            const ws = wsRef.current;
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify(eyedata));
-            } else {
-                console.warn('WebSocket is not open, cannot send data', ws?.readyState);
+                const ws = wsRef.current;
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ left: leftEyeCoords, right: rightEyeCoords, time: timestamp }));
+                } else {
+                    console.warn('WebSocket is not open, cannot send data', ws?.readyState);
+                }
             }
-        };
-
-        useEffect(() => {
-            const ws = new WebSocket("ws://localhost:8000/ws");
-            wsRef.current = ws;
-
-            ws.addEventListener("open", () => {
-                console.log('WebSocket connected');
-            });
-
-            ws.addEventListener("message", (event) => {
-                try {
-                    const data = JSON.parse(event.data);
-                    console.log("Is eye closed?", data.eyeclosed);
-                } catch (err) {
-                    console.error('Failed to parse WebSocket message', err, event.data);
-                }
-            });
-
-            ws.addEventListener("error", (event) => {
-                console.error('WebSocket error', event);
-            });
-
-            ws.addEventListener("close", (event) => {
-                console.log('WebSocket closed', event.code, event.reason);
-                if (wsRef.current === ws) {
-                    wsRef.current = null;
-                }
-            });
-
-            return () => {
-                ws.close();
-                if (wsRef.current === ws) {
-                    wsRef.current = null;
-                }
-            };
-        }, []);
-
-        //set an iterval on how many times are the coordinates send and captured
-    useEffect(() => {
-        const interval = setInterval(() => {
-            captureCoordinates();
         }, 100);
+
         return () => clearInterval(interval);
     }, []);
 

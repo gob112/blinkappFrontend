@@ -4,52 +4,35 @@ import { useNavigate } from "react-router-dom";
 
 
 const Timer = () =>{
-    const [time, setTime] = useState(0);
+    const navigate = useNavigate();
+    const [duration] = useState(() => {
+      const savedDuration = localStorage.getItem("break_timer_duration");
+      return savedDuration ? Number(savedDuration) : 10000;
+    });
+    const [time, setTime] = useState(duration);
     const [start, setStart] = useState(false);
     const intervalRef = useRef(null);
-    const navigate = useNavigate();
-    const [duration, setDuration] = useState(() => {
-  // 1. Fetch the value from the global browser cache
-  const savedDuration = localStorage.getItem("break_timer_duration");
-  
-  // 2. Convert it to a number if it exists, otherwise use a fallback default
-  return savedDuration ? Number(savedDuration) : 10000; 
-});
 
-    useEffect(()=>{
-      
-        setTime(duration);
-        setStart(true);
-    },[duration])
-
-    useEffect(()=>{
-        if (start && time>0) {
-
-            intervalRef.current= setInterval(()=>{
-
-                setTime(prevTime => {
-                    if (prevTime <= 1000) {
-                        // Stop when less than or equal to 1 second left
-                        clearInterval(intervalRef.current);
-                        setStart(false);
-                        navigate('/test')
-                        return 0; // Set exactly 0
-                    }
-                    return prevTime - 1000;
-                    });
-            },1000);
-        }else{
+    useEffect(() => {
+        if (!start) {
             clearInterval(intervalRef.current);
-            setTime(duration);
+            return;
         }
 
-        return () => {
-            clearInterval(intervalRef.current);
-           
+        intervalRef.current = setInterval(() => {
+            setTime((prevTime) => {
+                if (prevTime <= 1000) {
+                    clearInterval(intervalRef.current);
+                    setStart(false);
+                    navigate('/test');
+                    return 0;
+                }
+                return prevTime - 1000;
+            });
+        }, 1000);
 
-        }
-
-    },[start,navigate]);
+        return () => clearInterval(intervalRef.current);
+    }, [start, navigate]);
      
 
 

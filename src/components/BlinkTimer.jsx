@@ -13,33 +13,20 @@ const BlinkTimer = () => {
   const predictionsRef = useRef([]);
   const navigate = useNavigate();
 
-  
-  useEffect(()=>
-  {
-    if (predictions.length > 15){
-        setPredictions(predictions.slice(-5))
-      }
-    predictionsRef.current=predictions
-    
-  },[predictions]);
   useEffect(() => {
     // Open connection to your FastAPI backend
     wsRef.current = new WebSocket("ws://localhost:8000/test");
 
-    
-
     wsRef.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      
-    
-      setPredictions((prev) => [...prev, data.pred]);
-
-     
+      setPredictions((prev) => {
+        const next = [...prev, data.pred];
+        const trimmed = next.length > 15 ? next.slice(-5) : next;
+        predictionsRef.current = trimmed;
+        return trimmed;
+      });
     };
 
-   
-
-    
     return () => {
       if (wsRef.current) wsRef.current.close();
     };

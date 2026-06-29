@@ -1,7 +1,3 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
 import './App.css'
 import BlinkDetection from './components/BlinkDetection'
 import Stats from './components/Stats'
@@ -15,8 +11,9 @@ function App() {
 
   return (
     <div>
-      <NavBar />
+     
       <Router>
+         <NavBar />
         <Routes>
           <Route path="/blink" element={<BlinkDetection />} />
           <Route path="/" element={<h1>homepage</h1>} />

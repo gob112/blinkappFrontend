@@ -1,0 +1,30 @@
+name: Frontend CI Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Frontend Code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js Environment
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+        cache: 'npm'
+
+    - name: Install Dependencies & Audit Syntax
+      run: |
+        npm ci
+        npm run lint
+
+    # Verifies the frontend multi-stage Nginx Dockerfile compiles by itself
+    - name: Build Frontend Container Image
+      run: docker build -t blink-frontend:latest .
